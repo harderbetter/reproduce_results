@@ -15,7 +15,7 @@ import torch.nn as nn
 import argparse
 
 united_parser = argparse.ArgumentParser()
-united_parser.add_argument("--model_united", default="masked_ftml", type=str, help="specific model: [masked_ftml,SDN, MSDNet, l2stop]")
+united_parser.add_argument("--model_united", default="twp", type=str, help="specific model: [masked_ftml,twp,SDN, MSDNet, l2stop]")
 # united_parser.add_argument("--em", default=0, type=float, help="coefficient of entropy minimization. If you try VAT + EM, set 0.06")
 # united_parser.add_argument("--validation", default=25000, type=int, help="validate at this interval (default 25000)")
 # united_parser.add_argument("--dataset", "-d", default="svhn", type=str, help="dataset name : [svhn, cifar10]")
@@ -144,6 +144,8 @@ class model_setting:
 def read_model_setting(model_name='masked_ftml'):
     if model_name == 'masked_ftml':
         model_params = config.masked_ftml
+    if model_name == 'twp':
+        model_params = config.twp
     # if model_name == 'SDN':
     #     model_params = config.SDN
     # if model_name == 'MSDNet':
@@ -161,6 +163,7 @@ def read_model_setting(model_name='masked_ftml'):
     model_set.meta_batch     = model_params["meta_batch"]
     model_set.eta_1 = model_params["eta_1"]
     model_set.eta_3  = model_params["eta_3"]
+    model_set.eps = model_params["eps"]
     model_set.num_neighbors = model_params["num_neighbors"]
     model_set.d_feature = model_params["d_feature"]
 
@@ -211,6 +214,28 @@ def masked_ftml_param_convert(settings, model_param):
     model_param.meta_batch = settings.model_settings[settings.model_name].meta_batch
     model_param.eta_1 = settings.model_settings[settings.model_name].eta_1
     model_param.eta_3 = settings.model_settings[settings.model_name].eta_3
+    model_param.num_neighbors = settings.model_settings[settings.model_name].num_neighbors
+    model_param.d_feature = settings.model_settings[settings.model_name].d_feature
+
+    return model_param
+
+def twp_param_convert(settings, model_param):
+    model_param.save          = settings.save_dir+ "/twp"
+    model_param.log_file      = settings.log_file
+    model_param.seed          = settings.seed
+    model_param.data          = settings.dataset[0]
+    model_param.data_root     = settings.dataset_root
+    model_param.model_name = settings.model_name
+    # print(f'Specific Model Parameters for {settings.model_name}:\n',
+    #       settings.model_settings[settings.model_name].summary())
+    model_param.val_batch_size = settings.model_settings[settings.model_name].val_batch_size
+    model_param.K = settings.model_settings[settings.model_name].K
+    model_param.Kq = settings.model_settings[settings.model_name].Kq
+    model_param.inner_steps = settings.model_settings[settings.model_name].inner_steps
+    model_param.num_iterations = settings.model_settings[settings.model_name].num_iterations
+    model_param.meta_batch = settings.model_settings[settings.model_name].meta_batch
+    model_param.eta_1 = settings.model_settings[settings.model_name].eta_1
+    model_param.eps = settings.model_settings[settings.model_name].eps
     model_param.num_neighbors = settings.model_settings[settings.model_name].num_neighbors
     model_param.d_feature = settings.model_settings[settings.model_name].d_feature
 
@@ -539,7 +564,7 @@ settings = read_settings(display=True)
 settings.model_name = united_args.model_united
 create_path(settings.save_dir)
 set_logger(os.path.join(settings.save_dir, "settings.log_file"))
-print(f'$$###$$Specific Model Parameters for {settings.model_name}:\n', settings.model_settings[settings.model_name].summary())
+print(f'###Specific Model Parameters for {settings.model_name}:\n', settings.model_settings[settings.model_name].summary())
 concise_log_file = settings.model_settings[settings.model_name].log_file
 print(settings.save_dir,"  ",concise_log_file)
 con_log = concise_log(os.path.join(settings.save_dir, concise_log_file))
@@ -562,12 +587,30 @@ if settings.model_name == 'masked_ftml':
 
     print("Adjusted model params:\n", vars(adjust_param))
     print("\n=================== Model: masked_ftml ===================\n")
-    res = m_ftml_run(masked_ftml_para)
+    res ,res_check= m_ftml_run(masked_ftml_para)
     saved_path = f'{adjust_param.save}/save_models/model_best.pth.tar'
-    for each in res:
+    for each in res_check:
         con_log.write(each[0])
     with open(os.path.join(adjust_param.save, "results.pkl"), "wb") as f_write:
         pickle.dump(res, f_write, protocol=pickle.HIGHEST_PROTOCOL)
+
+if settings.model_name == 'twp':
+    from cls_twp.twp import *
+    from cls_twp.twp_main import *
+    from cls_twp.twp_main import arg_parser as twp_parser
+
+    twp_para = twp_parser
+
+    adjust_param = twp_param_convert(settings, twp_para)
+    print("Adjusted model params:\n", vars(adjust_param))
+    print("\n=================== Model: twp ===================\n")
+    res, res_check = twp_run(twp_para)
+    saved_path = f'{adjust_param.save}/save_models/model_best.pth.tar'
+    for each in res_check:
+        con_log.write(each[0])
+    with open(os.path.join(adjust_param.save, "results.pkl"), "wb") as f_write:
+        pickle.dump(res, f_write, protocol=pickle.HIGHEST_PROTOCOL)
+
 # if united_args.model_united == "MSDNet":
     #import model related modules for model:MSDNet
     import MSDNet.main as MSDNet_model
