@@ -120,10 +120,24 @@ masked_ftml= {
 "K" : 100,  # few shots in support
 "Kq" : 200,  # shots for query kq= k*2
 "inner_steps" : 1,  # gradient steps in the inner loop
-"num_iterations" : 200,  # outer iteration
+"num_iterations" : 100,  # outer iteration
 "meta_batch" : 32,
 "eta_1" : 0.00001,  # step size of inner primal update
 "eta_3" : 0.00001,  # step size of outer primal update
+"num_neighbors" : 3,
+"d_feature" : 51  # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
+}
+
+twp= {
+"log_file"          : "log_file_name_0708_ffml_test.log",
+"val_batch_size" : 0.9,  # data points for validation
+"K" : 100,  # few shots in support
+"Kq" : 200,  # shots for query kq= k*2
+"inner_steps" : 1,  # gradient steps in the inner loop
+"num_iterations" : 100,  # outer iteration
+"meta_batch" : 32,
+"eta_1" : 0.00001,  # step size of inner primal update
+"eps" : 0.45,  # step size of outer primal update
 "num_neighbors" : 3,
 "d_feature" : 51  # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
 }
