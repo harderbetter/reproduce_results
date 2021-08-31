@@ -15,7 +15,7 @@ import torch.nn as nn
 import argparse
 
 united_parser = argparse.ArgumentParser()
-united_parser.add_argument("--model_united", default="adpolc", type=str, help="specific model: [masked_ftml,twp,genolc,adpolc,SDN, MSDNet, l2stop]")
+united_parser.add_argument("--model_united", default="ogdlc", type=str, help="specific model: [ogdlc,masked_ftml,twp,genolc,adpolc,SDN, MSDNet, l2stop]")
 # united_parser.add_argument("--em", default=0, type=float, help="coefficient of entropy minimization. If you try VAT + EM, set 0.06")
 # united_parser.add_argument("--validation", default=25000, type=int, help="validate at this interval (default 25000)")
 # united_parser.add_argument("--dataset", "-d", default="svhn", type=str, help="dataset name : [svhn, cifar10]")
@@ -154,6 +154,8 @@ def read_model_setting(model_name='masked_ftml'):
         model_params = config.genolc
     if model_name == 'adpolc':
         model_params = config.adpolc
+    if model_name == 'ogdlc':
+        model_params = config.ogdlc
     # if model_name == 'SDN':
     #     model_params = config.SDN
     # if model_name == 'MSDNet':
@@ -213,8 +215,6 @@ def masked_ftml_param_convert(settings, model_param):
     model_param.data          = settings.dataset[0]
     model_param.data_root     = settings.dataset_root
     model_param.model_name = settings.model_name
-    # print(f'Specific Model Parameters for {settings.model_name}:\n',
-    #       settings.model_settings[settings.model_name].summary())
     model_param.val_batch_size = settings.model_settings[settings.model_name].val_batch_size
     model_param.K = settings.model_settings[settings.model_name].K
     model_param.Kq = settings.model_settings[settings.model_name].Kq
@@ -284,7 +284,20 @@ def adpolc_param_convert(settings, model_param):
     model_param.num_neighbors = settings.model_settings[settings.model_name].num_neighbors
     model_param.d_feature = settings.model_settings[settings.model_name].d_feature
 
-
+def ogdlc_param_convert(settings, model_param):
+    model_param.save = settings.save_dir + "/ogdlc"
+    model_param.log_file = settings.log_file
+    model_param.seed = settings.seed
+    model_param.data = settings.dataset[0]
+    model_param.data_root = settings.dataset_root
+    model_param.model_name = settings.model_name
+    model_param.val_batch_size = settings.model_settings[settings.model_name].val_batch_size
+    model_param.K = settings.model_settings[settings.model_name].K
+    model_param.eta_1 = settings.model_settings[settings.model_name].eta_1
+    model_param.eps = settings.model_settings[settings.model_name].eps
+    model_param.delta = settings.model_settings[settings.model_name].delta
+    model_param.num_neighbors = settings.model_settings[settings.model_name].num_neighbors
+    model_param.d_feature = settings.model_settings[settings.model_name].d_feature
     return model_param
 def MSDNet_param_convert(settings, model_param):
     model_param.save          = settings.save_dir+ "/MSDNet"
@@ -633,10 +646,9 @@ if settings.model_name == 'masked_ftml':
 
     print("Adjusted model params:\n", vars(adjust_param))
     print("\n=================== Model: masked_ftml ===================\n")
-    res ,res_check= m_ftml_run(masked_ftml_para)
+    res ,res_check,aucs= m_ftml_run(masked_ftml_para)
     saved_path = f'{adjust_param.save}/save_models/model_best.pth.tar'
-    for each in res_check:
-        con_log.write(each[0])
+    con_log.write('auc score for final task: '+str(aucs[-1]))
     with open(os.path.join(adjust_param.save, "results.pkl"), "wb") as f_write:
         pickle.dump(res, f_write, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -650,10 +662,9 @@ if settings.model_name == 'twp':
     adjust_param = twp_param_convert(settings, twp_para)
     print("Adjusted model params:\n", vars(adjust_param))
     print("\n=================== Model: twp ===================\n")
-    res, res_check = twp_run(twp_para)
+    res, res_check,aucs = twp_run(twp_para)
     saved_path = f'{adjust_param.save}/save_models/model_best.pth.tar'
-    for each in res_check:
-        con_log.write(each[0])
+    con_log.write('auc score for final task: '+str(aucs[-1]))
     with open(os.path.join(adjust_param.save, "results.pkl"), "wb") as f_write:
         pickle.dump(res, f_write, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -666,10 +677,9 @@ if settings.model_name == 'genolc':
     adjust_param = genolc_param_convert(settings, gen_para)
     print("Adjusted model params:\n", vars(adjust_param))
     print("\n=================== Model: genolc ===================\n")
-    res, res_check = genolc_run(genolc_parser)
+    res, res_check,aucs = genolc_run(genolc_parser)
     saved_path = f'{adjust_param.save}/save_models/model_best.pth.tar'
-    for each in res_check:
-        con_log.write(each[0])
+    con_log.write('auc score for final task: '+str(aucs[-1]))
     with open(os.path.join(adjust_param.save, "results.pkl"), "wb") as f_write:
         pickle.dump(res, f_write, protocol=pickle.HIGHEST_PROTOCOL)
 if settings.model_name == 'adpolc':
@@ -681,12 +691,30 @@ if settings.model_name == 'adpolc':
     adjust_param = adpolc_param_convert(settings, adp_para)
     print("Adjusted model params:\n", vars(adjust_param))
     print("\n=================== Model: adpolc ===================\n")
-    res, res_check = adpolc_run(adp_para)
+    res, res_check,aucs = adpolc_run(adp_para)
+    # print("aucs",aucs)
     saved_path = f'{adjust_param.save}/save_models/model_best.pth.tar'
-    for each in res_check:
-        con_log.write(each[0])
+
+    con_log.write('auc score for final task: '+str(aucs[-1]))
     with open(os.path.join(adjust_param.save, "results.pkl"), "wb") as f_write:
         pickle.dump(res, f_write, protocol=pickle.HIGHEST_PROTOCOL)
+if settings.model_name == 'ogdlc':
+    from cls_ogdlc import *
+    from cls_ogdlc.ogdlc_main import *
+    from cls_ogdlc.ogdlc_main import arg_parser as ogdlc_parser
+
+    ogd_para = ogdlc_parser
+    adjust_param = ogdlc_param_convert(settings, ogd_para)
+    print("Adjusted model params:\n", vars(adjust_param))
+    print("\n=================== Model: adpolc ===================\n")
+    res,aucs = ogdlc_run(ogd_para)
+    # print("aucs",aucs)
+    saved_path = f'{adjust_param.save}/save_models/model_best.pth.tar'
+
+    con_log.write('auc score for final task: '+str(aucs[-1]))
+    with open(os.path.join(adjust_param.save, "results.pkl"), "wb") as f_write:
+        pickle.dump(res, f_write, protocol=pickle.HIGHEST_PROTOCOL)
+
 # if united_args.model_united == "MSDNet":
     #import model related modules for model:MSDNet
     import MSDNet.main as MSDNet_model
