@@ -1,37 +1,6 @@
 
 
 ***************************************
-************************* 2021-08-30_23-36-23 *****************************
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-General Parameters:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-| save_dir             = saved_results_test_0712_3
-| log_file             = log_file_name_0708_ffml_test.log
-| seed                 = 0
-| dataset              = ['ny_stop_and_frisk', 'communities_and_crime']
-| dataset_root         = /home/feng/FFML/data
-| model_name           = masked_ftml
-| model_settings       = {'masked_ftml': <__main__.model_setting object at 0x7f3d455f5d90>}
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Specific Model Parameters for masked_ftml:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-| val_batch_size       = 0.9
-| K                    = 100
-| Kq                   = 200
-| inner_steps          = 1
-| num_iterations       = 100
-| meta_batch           = 32
-| eta_1                = 1e-05
-| eta_3                = 1e-05
-| num_neighbors        = 3
-| d_feature            = [51, 100]
-| log_file             = log_file_name_0708_masked_ftml_test.log
-
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-***************************************
 ************************* 2021-08-30_23-37-31 *****************************
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,7 +26,8 @@ Specific Model Parameters for masked_ftml:
 | eta_1                = 1e-05
 | eta_3                = 1e-05
 | num_neighbors        = 3
-| d_feature            = [51, 100]
+| dataset              = 'ny_stop_and_frisk'
+| d_feature            = 51
 | log_file             = log_file_name_0708_masked_ftml_test.log
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
