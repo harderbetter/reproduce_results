@@ -74,14 +74,9 @@ General_Parameters = {
 "save_dir"          : "saved_results_test_0712_3",
 "log_file"          : "log_file_name_0708_ffml_test.log",
 "seed"              : 0,
-# "print_freq"        : 100,
-"dataset"           : ["ny_stop_and_frisk"],
+"dataset"           : ["ny_stop_and_frisk",'communities_and_crime'],
 "dataset_root"      : "/home/feng/FFML/data",
-# "models"            : ["l2stop", "SDN", "MSDNet"],
-"model"             : None,
-# "GPUs"              : [[0]],
-# "backbone"          : ["vgg"],
-# "mini_batch_size"   : 64,
+"models"            : ['Genolc', 'Adpolc', 'masked_ftml','twp','ogdlc']
 }
 
 # SDN = {
@@ -115,7 +110,7 @@ General_Parameters = {
 # }
 
 masked_ftml= {
-"log_file"          : "log_file_name_0708_ffml_test.log",
+"log_file"          : "log_file_name_0708_masked_ftml_test.log",
 "val_batch_size" : 0.9,  # data points for validation
 "K" : 100,  # few shots in support
 "Kq" : 200,  # shots for query kq= k*2
@@ -125,11 +120,11 @@ masked_ftml= {
 "eta_1" : 0.00001,  # step size of inner primal update
 "eta_3" : 0.00001,  # step size of outer primal update
 "num_neighbors" : 3,
-"d_feature" : 51  # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
+"d_feature" : [51,100]  # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
 }
 
 twp= {
-"log_file"          : "log_file_name_0708_ffml_test.log",
+"log_file"          : "log_file_name_0708_twp_test.log",
 "val_batch_size" : 0.9,  # data points for validation
 "K" : 100,  # few shots in support
 "Kq" : 200,  # shots for query kq= k*2
@@ -139,5 +134,39 @@ twp= {
 "eta_1" : 0.00001,  # step size of inner primal update
 "eps" : 0.45,  # step size of outer primal update
 "num_neighbors" : 3,
-"d_feature" : 51  # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
+"d_feature" : [51,100]  # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
+}
+
+genolc= {
+"log_file"          : "log_file_name_0708_genolc_test.log",
+"val_batch_size" : 0.9,  # data points for validation
+"K" : 100,  # few shots in support
+"num_iterations" : 100,  # outer iteration
+"eta_1" : 20,  # step size of inner primal update
+"eps" : 0.5,  # step size of outer primal update
+"num_neighbors" : 3,
+"delta":50,
+"d_feature" : [51,100]  # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
+}
+
+adpolc= {
+"log_file"          : "log_file_name_0708_adpolc_test.log",
+"val_batch_size" : 0.9,  # data points for validation
+"K" : 100,  # few shots in support
+"num_iterations" : 100,  # outer iteration
+"eta_1" : 20,  # step size of inner primal update
+"eps" : 0.5,  # step size of outer primal update
+"num_neighbors" : 3,
+"d_feature" : [51,100] # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
+}
+
+ogdlc= {
+"log_file"          : "log_file_name_0708_ogdlc_test.log",
+"val_batch_size" : 0.9,  # data points for validation
+"K" : 100,  # few shots in support
+"eta_1" : 0.02,  # step size of inner primal update
+"eps" : 0.05,  # step size of outer primal update
+"delta":100,
+"num_neighbors" : 3,
+"d_feature" : [51,100] # feature size of the data set cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
 }
