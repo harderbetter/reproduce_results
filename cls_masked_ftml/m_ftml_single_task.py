@@ -88,9 +88,10 @@ def cal_loss_and_fairness(d_feature, net, task,
     # yX = np.column_stack((y_hat, X_temp))
 
     accuracy = accuracy_score(y_hat.round(), y_q)
+    auc = cla_auc_fairness(input_zy)
     dp = cal_dp(input_zy)
     eop = cal_eop(z_y_hat_y)
     discrimination = cal_discrimination(input_zy)
     consistency = 1
 
-    return loss, fair, accuracy, dp, eop, discrimination, consistency
+    return loss, fair, accuracy, dp, eop, discrimination, consistency,auc

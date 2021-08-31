@@ -9,9 +9,9 @@ import numpy as np
 from numpy import linalg as LA
 from sklearn.metrics import accuracy_score
 
-from .genolc_eval_metrics_cls import *
-from .genolc_NN import *
-from .genolc_params_table import *
+from .ogdlc_eval_metrics_cls import *
+from .ogdlc_NN import *
+from .ogdlc_params_table import *
 
 seed = 37
 np.random.seed(seed)
@@ -21,7 +21,7 @@ def prep(save, d_feature, lamb, dataset,
          K, val_batch_size, num_neighbors,
          eta_1, delta, eps):
     now = datetime.datetime.now()
-    exp_name = now.strftime("/%Y-%m-%d-%H-%M-%S-GenOLC-" + dataset)
+    exp_name = now.strftime("/%Y-%m-%d-%H-%M-%S-OGDLC-" + dataset)
     save_folder = save + exp_name
     if not os.path.exists(save_folder):
         os.makedirs(save_folder)
@@ -35,18 +35,18 @@ def prep(save, d_feature, lamb, dataset,
     return val_save_path
 
 
-def genolc(d_feature, lamb, tasks, data_path, dataset, save,
-           K, val_batch_size, num_neighbors,
-           eta_1, delta, eps,num_iterations):
+def ogdlc(d_feature, lamb, tasks, data_path, dataset, save,
+          K, val_batch_size, num_neighbors,
+          eta_1, delta, eps):
     val_save_path = prep(save, d_feature, lamb, dataset,
                          K, val_batch_size, num_neighbors,
                          eta_1, delta, eps)
     net = NN(d_feature + 1)
-    X_buffer = []
+    # buffer = pd.DataFrame()
     T = len(tasks)
     res = []
-    res_check=[]
     aucs=[]
+
     for t in range(1, T + 1):
         start_time = time.time()
         criterion = nn.BCELoss()
@@ -96,9 +96,8 @@ def genolc(d_feature, lamb, tasks, data_path, dataset, save,
 
         accuracy = accuracy_score(y_hat.round(), y_q)
         dp = cal_dp(input_zy)
-        auc = cla_auc_fairness(input_zy)
-
         eop = cal_eop(z_y_hat_y)
+        aucs.append(cla_auc_fairness(input_zy))
         discrimination = cal_discrimination(input_zy)
         # consistency = cal_consistency(yX, num_neighbors)
         consistency = 1
@@ -109,13 +108,7 @@ def genolc(d_feature, lamb, tasks, data_path, dataset, save,
             np.round(discrimination, 10), np.round(consistency, 10),
             np.round(cost_time, 4)))
         # torch.save(net.state_dict(), model_save_path)
-        # res.append([loss.item(), fair, accuracy, dp, eop, discrimination, consistency, cost_time])
-        aucs.append(auc)
-        res.append(["Val-Task %s/%s: loss:%s; dbc:%s; acc:%s ;dp:%s; eop:%s; disc:%s; cons:%s; time:%s sec." % (
-            t, T, np.round(loss.item(), 4), np.round(fair, 10), np.round(accuracy, 10), np.round(dp, 10), np.round(eop, 10),
-            np.round(discrimination, 10), np.round(consistency, 10),
-            np.round(cost_time, 4))])
-        res_check.append(["Val-Task %s/%s: dp:%s; eop:%s." % (t, T, np.round(dp, 10), np.round(eop, 10))])
+        res.append([loss.item(), fair, accuracy, dp, eop, discrimination, consistency, cost_time])
 
         # temp_weights = [w.clone() for w in list(net.parameters())]
         X_s = train_task[train_task.columns[-d_feature:]].copy()
@@ -125,25 +118,15 @@ def genolc(d_feature, lamb, tasks, data_path, dataset, save,
         z_s = z_s.values
         z_bar = np.mean(z_s) * np.ones((len(z_s), 1))
 
-        X_buffer.append(LA.norm(X_s))
-        R = math.sqrt(1 + 2 * eps) - 1
-        G = max(math.sqrt(d_feature) + R, max(X_buffer))
-        beta = random.uniform(0, 1)
-        theta = 6 * R * G / (t ** beta)
-
         X_s = torch.tensor(X_s, dtype=torch.float).unsqueeze(1)
         y_s = torch.tensor(y_s, dtype=torch.float).unsqueeze(1)
         ones = torch.tensor(np.ones((len(y_s), 1)), dtype=torch.float).unsqueeze(1)
         z_s = torch.tensor(z_s, dtype=torch.float).unsqueeze(1)
         z_bar = torch.tensor(z_bar, dtype=torch.float).unsqueeze(1)
 
-
         y_hat = net.parameterised(X_s, temp_weights)
         fair = torch.abs(torch.mean((z_s - z_bar) * y_hat)) - eps
-        if fair.item() < 0:
-            fair = torch.tensor([0], requires_grad=True, dtype=torch.float)
-
-        loss = (-1.0) * torch.mean(y_s * torch.log(y_hat) + (ones - y_s) * torch.log(ones - y_hat)) + lamb * fair - (theta / 2) * (temp_lambda ** 2)
+        loss = (-1.0) * torch.mean(y_s * torch.log(y_hat) + (ones - y_s) * torch.log(ones - y_hat)) + lamb * fair - (delta * eta_1 / 2) * (temp_lambda ** 2)
         loss = loss / len(train_task.index)
         grad = torch.autograd.grad(loss, temp_weights, retain_graph=True)
         temp_weights = [w - eta_1 * g for w, g in zip(temp_weights, grad)]
@@ -151,15 +134,16 @@ def genolc(d_feature, lamb, tasks, data_path, dataset, save,
         if temp_weights_norm > 100:
             temp_weights = [w / net.e_norm(temp_weights) for w in temp_weights]
         grad_lamb = torch.autograd.grad(loss.sum(), temp_lambda)
-
-        temp_lambda = fair / (delta * eta_1)
+        temp_lambda = temp_lambda + eta_1 * grad_lamb[0]
+        if temp_lambda.item() < 0:
+            temp_lambda = torch.tensor([0], requires_grad=True, dtype=torch.float)
 
         weights = list(nn.parameter.Parameter(item) for item in temp_weights)
         net.assign(weights)
         lamb = temp_lambda
-
+        
         # print(lamb)
 
     with open(val_save_path, 'wb') as f:
         pickle.dump(res, f)
-    return res, res_check,aucs
+    return res, aucs

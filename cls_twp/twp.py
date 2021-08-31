@@ -46,6 +46,7 @@ def twp(d_feature, lamb, tasks, data_path, dataset, save,
     T = len(tasks)
     res = []
     res_check=[]
+    aucs=[]
 
     for t in range(1, T + 1):
         start_time = time.time()
@@ -93,6 +94,8 @@ def twp(d_feature, lamb, tasks, data_path, dataset, save,
         accuracy = accuracy_score(y_hat.round(), y_q)
         dp = cal_dp(input_zy)
         eop = cal_eop(z_y_hat_y)
+        auc=cla_auc_fairness(input_zy)
+        aucs.append(auc)
         discrimination = cal_discrimination(input_zy)
         # consistency = cal_consistency(yX, num_neighbors)
         consistency = 1
@@ -145,4 +148,4 @@ def twp(d_feature, lamb, tasks, data_path, dataset, save,
     with open(val_save_path, 'wb') as f:
         pickle.dump(res, f)
 
-    return res, res_check
+    return res, res_check,aucs

@@ -42,17 +42,19 @@ def m_ftml_run(arg_parser):
     num_neighbors = arg_parser.num_neighbors
 
     # cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
-    d_feature = arg_parser.d_feature  # feature size of the data set
+
     data_path = arg_parser.data_root
     # dataset = r'bank'
     dataset = arg_parser.data
+    datasetALL = ["ny_stop_and_frisk", 'communities_and_crime']
+    d_feature = arg_parser.d_feature[datasetALL.index(dataset)]  # feature size of the data set
     save = arg_parser.save
     print("path",data_path + '/' + dataset)
     tasks = [x[0] for x in os.walk(data_path + '/' + dataset)][1:]
     print("tasks",tasks)
 
     start = time.time()
-    res =mftml(d_feature, tasks, data_path, dataset, save,
+    res,res_check,aucs=mftml(d_feature, tasks, data_path, dataset, save,
          K, Kq, val_batch_size, num_neighbors,
          num_iterations, inner_steps, meta_batch,
          eta_1, eta_3)
@@ -61,7 +63,7 @@ def m_ftml_run(arg_parser):
     print("cost_time",cost_time)
     print("res",res)
     res.append(["total cost_time :"+str(cost_time)])
-    return res
+    return res,res_check,aucs
 
 if __name__ == "__main__":
     # parser = argparse.ArgumentParser(description='Process some integers.')

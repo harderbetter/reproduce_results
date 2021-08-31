@@ -2,15 +2,15 @@ import time
 from os import listdir
 from os.path import isfile, join
 
-from .adpolc import *
+from .ogdlc import *
 class arg_parser:
     def __init__(self):
         self.val_batch_size            = None
         self.K = None
-        self.Kq     = None
+        # self.Kq     = None
         self.inner_steps         = None
         self.num_iterations        = None
-        self.meta_batch     = None
+        self.delta     = None
         self.eta_1 = None
         self.eps  = None
         self.num_neighbors = None
@@ -25,16 +25,18 @@ class arg_parser:
             param_value = str(value)
             settings_str += "| {} = {}\n".format(param.ljust(20), param_value)
         return settings_str
-def adpolc_run(arg_parser):
+def ogdlc_run(arg_parser):
     lamb = random.choice([0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000])
     K = arg_parser.K
     val_batch_size = arg_parser.val_batch_size  # data points for validation
 
+    eta_1 = arg_parser.eta_1  # step size
+    delta = arg_parser.delta
     eps = arg_parser.eps
     num_neighbors = arg_parser.num_neighbors
-    num_iterations = arg_parser.num_iterations
 
     # cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
+
     data_path = arg_parser.data_root
     # dataset = r'bank'
     dataset = arg_parser.data
@@ -45,20 +47,21 @@ def adpolc_run(arg_parser):
 
     start = time.time()
     print(lamb)
-    res,res_check,aucs =adpolc(d_feature, lamb, tasks, data_path, dataset, save,
+    res,aucs=ogdlc(d_feature, lamb, tasks, data_path, dataset, save,
          K, val_batch_size, num_neighbors,
-         eps,num_iterations)
+         eta_1, delta, eps)
     cost_time_in_second = time.time() - start
     cost_time = time.strftime("%H:%M:%S", time.gmtime(cost_time_in_second))
     print(cost_time)
-    return res,res_check,aucs
-
+    return res ,aucs
 if __name__ == "__main__":
     lamb = random.choice([0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10, 100, 1000, 10000])
     K = 100
-    val_batch_size = 0.3  # data points for validation
+    val_batch_size = 0.9  # data points for validation
 
-    eps = 0.5
+    eta_1 = 0.02  # step size
+    delta = 100
+    eps = 0.05
     num_neighbors = 3
 
     # cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
@@ -71,9 +74,9 @@ if __name__ == "__main__":
 
     start = time.time()
     print(lamb)
-    adpolc(d_feature, lamb, tasks, data_path, dataset, save,
+    ogdlc(d_feature, lamb, tasks, data_path, dataset, save,
          K, val_batch_size, num_neighbors,
-         eps)
+         eta_1, delta, eps)
     cost_time_in_second = time.time() - start
     cost_time = time.strftime("%H:%M:%S", time.gmtime(cost_time_in_second))
     print(cost_time)

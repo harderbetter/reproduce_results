@@ -46,6 +46,7 @@ def adpolc(d_feature, lamb, tasks, data_path, dataset, save,
     T = len(tasks)
     res = []
     res_check = []
+    aucs=[]
 
     for t in range(1, T + 1):
         start_time = time.time()
@@ -97,6 +98,7 @@ def adpolc(d_feature, lamb, tasks, data_path, dataset, save,
         yX = np.column_stack((y_hat, X_temp))
 
         accuracy = accuracy_score(y_hat.round(), y_q)
+        auc = cla_auc_fairness(input_zy)
         dp = cal_dp(input_zy)
         eop = cal_eop(z_y_hat_y)
         discrimination = cal_discrimination(input_zy)
@@ -115,6 +117,7 @@ def adpolc(d_feature, lamb, tasks, data_path, dataset, save,
             np.round(discrimination, 10), np.round(consistency, 10),
             np.round(cost_time, 4))])
         res_check.append(["Val-Task %s/%s: dp:%s; eop:%s." % (t, T, np.round(dp, 10), np.round(eop, 10))])
+        aucs.append(auc)
 
         # temp_weights = [w.clone() for w in list(net.parameters())]
         X_s = train_task[train_task.columns[-d_feature:]].copy()
@@ -160,4 +163,4 @@ def adpolc(d_feature, lamb, tasks, data_path, dataset, save,
 
     with open(val_save_path, 'wb') as f:
         pickle.dump(res, f)
-    return  res,res_check
+    return  res,res_check,aucs

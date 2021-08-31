@@ -35,7 +35,7 @@ def meta_update(d_feature, net,
         meta_loss = 0
         for i in range(len(batch)):
             task = batch[i]
-            t_loss, t_fair, t_acc, t_dp, t_eop, t_disc, t_cons = cal_loss_and_fairness(d_feature, net, task,
+            t_loss, t_fair, t_acc, t_dp, t_eop, t_disc, t_cons ,auc= cal_loss_and_fairness(d_feature, net, task,
                                                                                        K, Kq, num_neighbors,
                                                                                        inner_steps,
                                                                                        eta_1)
@@ -85,6 +85,8 @@ def mftml(d_feature, tasks, data_path, dataset, save,
     buffer = []
     T = len(tasks)
     res = []
+    res_check =[]
+    aucs=[]
 
     for t in range(1, T + 1):
         start_time = time.time()
@@ -98,7 +100,7 @@ def mftml(d_feature, tasks, data_path, dataset, save,
                               num_iterations, buffer, inner_steps, meta_batch,
                               eta_1, eta_3)
 
-        loss_val, fair_val, accuracy_val, dp_val, eop_val, discrimination_val, consistency_val = cal_loss_and_fairness(d_feature, new_net, task,
+        loss_val, fair_val, accuracy_val, dp_val, eop_val, discrimination_val, consistency_val,auc = cal_loss_and_fairness(d_feature, new_net, task,
                                                                                                                        K, val_batch_size, num_neighbors,
                                                                                                                        inner_steps,
                                                                                                                        eta_1)
@@ -107,15 +109,17 @@ def mftml(d_feature, tasks, data_path, dataset, save,
             t, T, np.round(loss_val.item(), 4), np.round(fair_val, 10), np.round(accuracy_val, 10), np.round(dp_val, 10), np.round(eop_val, 10),
             np.round(discrimination_val, 10), np.round(consistency_val, 10),
             np.round(cost_time, 4)))
+        aucs.append(auc)
         # torch.save(net.state_dict(), model_save_path)
         res.append(["Val-Task %s/%s: loss:%s; dbc:%s; acc:%s ;dp:%s; eop:%s; disc:%s; cons:%s; time:%s sec." % (
             t, T, np.round(loss_val.item(), 4), np.round(fair_val, 10), np.round(accuracy_val, 10), np.round(dp_val, 10), np.round(eop_val, 10),
             np.round(discrimination_val, 10), np.round(consistency_val, 10),
             np.round(cost_time, 4))])
+        res_check.append(["Val-Task %s/%s: dp:%s; eop:%s."%(t, T,np.round(dp_val, 10), np.round(eop_val, 10))])
         # print("res",res)
         net = copy.deepcopy(new_net)
 
-    return  res
+    return  res,res_check,aucs
 
     # with open(val_save_path, 'wb') as f:
     #     pickle.dump(res, f)

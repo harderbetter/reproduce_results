@@ -41,22 +41,26 @@ def twp_run(arg_parser):
     num_neighbors = arg_parser.num_neighbors
     num_iterations = arg_parser.num_iterations
     # cls_syn_data:2; adult:16; communities_and_crime:100; bank:16; census_income:36
-    d_feature = arg_parser.d_feature  # feature size of the data set
+
+
+
     data_path = arg_parser.data_root
     # dataset = r'bank'
     dataset = arg_parser.data
+    datasetALL = ["ny_stop_and_frisk", 'communities_and_crime']
+    d_feature = arg_parser.d_feature[datasetALL.index(dataset)]  # feature size of the data set
     save = arg_parser.save
     tasks = [x[0] for x in os.walk(data_path + '/' + dataset)][1:]
 
     print(lamb)
     start = time.time()
-    res,res_check =twp(d_feature, lamb, tasks, data_path, dataset, save,
+    res,res_check,aucs =twp(d_feature, lamb, tasks, data_path, dataset, save,
         K, val_batch_size, num_neighbors, eta_1, eps,num_iterations)
     cost_time_in_second = time.time() - start
     cost_time = time.strftime("%H:%M:%S", time.gmtime(cost_time_in_second))
     print(cost_time)
 
-    return  res, res_check
+    return  res, res_check,aucs
 
 
 

@@ -80,6 +80,78 @@ def cal_dp(input_zy):
         dp = 0
     return dp
 
+def cla_auc_fairness1(z_yhat):
+    z1Index=[]
+    z2Index=[]
+    count=0;
+    for item in z_yhat:
+        if item[0]==0:
+            z1Index.append(count);
+        else:
+            z2Index.append(count);
+        count=count+1;
+    z1_bigger=0;
+    for each in z1Index:
+        z1_y = z_yhat[each]
+        y = z1_y[1]
+        if y>=0.5:
+            for one in z2Index:
+                z2_y = z_yhat[one]
+                y = z2_y[1];
+                if y<0.5:
+                    z1_bigger = z1_bigger+1
+    auc = z1_bigger*1.0/(len(z1Index)*len(z2Index))
+    if auc<0.5:
+        temp = z1Index;
+        z1Index = z2Index;
+        z2Index = temp;
+        z1_bigger = 0;
+        for each in z1Index:
+            z1_y = z_yhat[each]
+            y = z1_y[1]
+            if y >=0.5:
+                for one in z2Index:
+                    z2_y = z_yhat[one]
+                    y = z2_y[1];
+                    if y < 0.5:
+                        z1_bigger = z1_bigger + 1
+        auc = z1_bigger * 1.0 / (len(z1Index) * len(z2Index))
+    return  auc
+def cla_auc_fairness(z_yhat):
+    z1Index=[]
+    z2Index=[]
+    count=0;
+    for item in z_yhat:
+        if item[0]==0:
+            z1Index.append(count);
+        else:
+            z2Index.append(count);
+        count=count+1;
+    z1_bigger=0;
+    for each in z1Index:
+        z1_y = z_yhat[each]
+        y1 = z1_y[1]
+        for one in z2Index:
+            z2_y = z_yhat[one]
+            y2 = z2_y[1];
+            if y1>y2:
+                z1_bigger = z1_bigger+1
+    auc = z1_bigger*1.0/(len(z1Index)*len(z2Index))
+    if auc<0.5:
+        temp = z1Index;
+        z1Index = z2Index;
+        z2Index = temp;
+        z1_bigger = 0;
+        for each in z1Index:
+            z1_y = z_yhat[each]
+            y1 = z1_y[1]
+            for one in z2Index:
+                z2_y = z_yhat[one]
+                y2 = z2_y[1];
+                if y1 > y2:
+                    z1_bigger = z1_bigger + 1
+        auc = z1_bigger * 1.0 / (len(z1Index) * len(z2Index))
+    return  auc
 def cal_eop(z_y_hat_y):
     count1 = 0
     count2 = 0
