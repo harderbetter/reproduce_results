@@ -22,7 +22,7 @@ Specific Model Parameters for adpolc:
 | eta_1                = 20
 | num_neighbors        = 3
 | dataset              = 'ny_stop_and_frisk'
-| d_feature            = [51, 100]
+| d_feature            = 51
 | log_file             = log_file_name_0708_adpolc_test.log
 | eps                  = 0.5
 
