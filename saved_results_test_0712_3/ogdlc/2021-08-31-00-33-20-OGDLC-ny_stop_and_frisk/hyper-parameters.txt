@@ -1,0 +1,11 @@
+    Parameters             Values      
+=======================================
+Data                  ny_stop_and_frisk
+d_feature             51               
+lambda                1                
+K                     100              
+Validation shots      0.900            
+Number of neighbors   3                
+eta_1                 0.020            
+delta                 100              
+eps                   0.050            

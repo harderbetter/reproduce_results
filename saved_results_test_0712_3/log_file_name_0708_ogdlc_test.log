@@ -1,6 +1,6 @@
 
 ***************************************
-************************* 2021-08-30_23-21-56 *****************************
+************************* 2021-08-31_00-33-20 *****************************
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 General Parameters:
@@ -10,21 +10,21 @@ General Parameters:
 | seed                 = 0
 | dataset              = ['ny_stop_and_frisk', 'communities_and_crime']
 | dataset_root         = /home/feng/FFML/data
-| model_name           = adpolc
-| model_settings       = {'adpolc': <__main__.model_setting object at 0x7fd0121c1cd0>}
+| model_name           = ogdlc
+| model_settings       = {'ogdlc': <__main__.model_setting object at 0x7f0b9e660e50>}
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Specific Model Parameters for adpolc:
+Specific Model Parameters for ogdlc:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 | val_batch_size       = 0.9
 | K                    = 100
-| num_iterations       = 100
-| eta_1                = 20
+| eta_1                = 0.02
 | num_neighbors        = 3
 | d_feature            = [51, 100]
-| log_file             = log_file_name_0708_adpolc_test.log
-| eps                  = 0.5
+| log_file             = log_file_name_0708_ogdlc_test.log
+| eps                  = 0.05
+| delta                = 100
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-auc score for final task: 0.5995163421309258
+auc score for final task: 0.5161305991343009
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
