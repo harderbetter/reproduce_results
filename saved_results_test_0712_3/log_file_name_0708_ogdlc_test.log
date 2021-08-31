@@ -20,7 +20,8 @@ Specific Model Parameters for ogdlc:
 | K                    = 100
 | eta_1                = 0.02
 | num_neighbors        = 3
-| d_feature            = [51, 100]
+| dataset              = 'ny_stop_and_frisk'
+| d_feature            = 51
 | log_file             = log_file_name_0708_ogdlc_test.log
 | eps                  = 0.05
 | delta                = 100
